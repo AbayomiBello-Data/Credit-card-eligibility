@@ -57,6 +57,8 @@ jobs:
       with:
         name: model-artifacts
         path: .
+    - name: Set OpenAI API Key
+      run: echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
     - name: Build Docker image
       run: docker build -t fraud-detection-app .
     - name: Deploy to VPS
@@ -66,4 +68,4 @@ jobs:
         VPS_PASSWORD: ${{ secrets.VPS_PASSWORD }}
       run: |
         docker save fraud-detection-app | bzip2 | ssh $VPS_USER@$VPS_HOST 'bunzip2 | docker load'
-        ssh $VPS_USER@$VPS_HOST 'docker run -d --rm --name fraud-detection-app -p 8000:8000 fraud-detection-app'
+        ssh $VPS_USER@$VPS_HOST 'docker run -d --rm --name fraud-detection-app -p 8000:8000 -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} fraud-detection-app'
