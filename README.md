@@ -79,9 +79,7 @@ To run the application locally:
    ```
    curl -X POST -H "Content-Type: application/json" -d '{"Time": ..., "V1": ..., ...}' http://127.0.0.1:8000/predict
    ```
-   - Sample request is like:
-   ```
-   curl -X POST -H "Content-Type: application/json" -d '{"Time": 119907, "V1": -0.611712, "V2": -0.769705, "V3": -0.149759, "V4": -0.224877, "V5": 2.028577, "V6": -2.019887, "V7": 0.292491, "V8": -0.523020, "V9": 0.358468, "V10": -0.507582, "V11": -1.205419, "V12": 0.564061, "V13": -0.190509, "V14": 0.191617, "V15": 0.301595, "V16": -0.408111, "V17": 0.299503, "V18": -0.209950, "V19": 0.770147, "V20": 0.202402, "V21": -0.075208, "V22": 0.045536, "V23": 0.380739, "V24": 0.023440, "V25": -2.220686, "V26": -0.201146, "V27": 0.066501, "V28": 0.221180, "Amount": 1.79}' http://127.0.0.1:8000/predict
+   
    ```
 
 
@@ -115,6 +113,4 @@ mlflow ui
 ## License
 This project is licensed under the terms of the MIT License
 
-## Contact
-- Please feel free to contact me if you have any questions or suggestions
-- Mohammadsadegh Solouki - mohamad.solouki@gmail.com
+
