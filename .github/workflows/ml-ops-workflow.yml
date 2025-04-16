@@ -3,7 +3,7 @@ name: Fraud Detection CI/CD
 on:
   push:
     branches:
-      - main
+      - master
   schedule:
     - cron: '0 0 1 * *'  # Run monthly on the 1st day of the month
 
