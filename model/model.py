@@ -33,8 +33,8 @@ def preprocess_data(data):
     """
     Preprocess the data, returning scaled features and labels.
     """
-    X = data.drop('Class', axis=1)
-    y = data['Class']
+    X = data.drop('Status', axis=1)
+    y = data['Status']
 
     # Feature scaling
     scaler = StandardScaler()
@@ -107,7 +107,7 @@ def save_model(model, model_save_path):
 if __name__ == '__main__':
     mlflow.set_experiment("fraud_detection")
 
-    data_path = os.getenv('DATA_PATH', 'data/creditcard.csv')
+    data_path = os.getenv('DATA_PATH', 'data/fraud_data.csv')
     simulated_data_path = os.getenv('SIMULATED_DATA_PATH', 'data/simulated_data.csv')
     model_save_path = os.getenv('MODEL_SAVE_PATH', 'model/saved_models/model.pkl')
 
@@ -143,3 +143,6 @@ if __name__ == '__main__':
 
         logging.info(f"Model training completed with accuracy: {metrics['accuracy']}, ROC AUC: {metrics['roc_auc']}, AUPRC: {metrics['auprc']}")
         logging.info(metrics['classification_report'])
+
+
+

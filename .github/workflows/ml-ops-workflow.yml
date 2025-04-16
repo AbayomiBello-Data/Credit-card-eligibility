@@ -24,7 +24,7 @@ jobs:
         pip install -r requirements.txt
     - name: Train and evaluate model
       env:
-        DATA_PATH: ${{ github.workspace }}/data/creditcard.csv
+        DATA_PATH: ${{ github.workspace }}/data/fraud_data.csv
         MODEL_SAVE_PATH: ${{ github.workspace }}/model/saved_models/model.pkl
       run: |
         python model/model.py

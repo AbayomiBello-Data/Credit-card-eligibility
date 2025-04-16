@@ -1,152 +1,413 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Fraud Detection</title>
+    <meta charset="UTF-8">
+    <title>Credit Card Eligibility Checker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f9;
+            margin: 0;
+            padding: 20px;
         }
+
         h1 {
             text-align: center;
+            color: #2c3e50;
         }
+
+        .description, .help-text {
+            text-align: center;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
         form {
-            max-width: 500px;
-            margin: 0 auto;
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            display: grid;
+            gap: 15px;
         }
-        input[type=text], input[type=number] {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 8px 0;
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .form-group label {
+            flex: 1 1 45%;
+            font-weight: 600;
+            color: #34495e;
+            min-width: 200px;
+        }
+
+        .form-group input,
+        .form-group select {
+            flex: 1 1 50%;
+            padding: 10px 14px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
             box-sizing: border-box;
+            transition: border 0.3s;
         }
+
         button {
-            background-color: #4CAF50;
+            background-color: #3498db;
             color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
+            padding: 14px;
             border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .help-btn {
+            background-color: #f1c40f;
+            color: #333;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #result {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #eaf7ea;
+            border-left: 5px solid #2ecc71;
+            color: #2c3e50;
+            font-weight: bold;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .tooltip {
+            display: none;
+            background: #fff9db;
+            border: 1px solid #f1c40f;
+            padding: 15px;
+            margin: 20px auto;
+            border-radius: 8px;
+            max-width: 800px;
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        /* Floating Chatbot Style */
+        #chatbot-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            padding: 15px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #chatbox {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #fff;
+            width: 300px;
+            height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+        }
+
+        #chatWindow {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 2px solid #ddd;
+        }
+
+        #chatWindow div {
+            margin-bottom: 10px;
+        }
+
+        #chatInput {
+            padding: 12px;
+            border: none;
+            border-top: 2px solid #ddd;
+            border-radius: 0 0 10px 10px;
+        }
+
+        #chatInput button {
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
             width: 100%;
         }
-        #result {
-            margin-top: 20px;
-            font-weight: bold;
+
+        #chatInput button:hover {
+            background-color: #2980b9;
         }
+
     </style>
 </head>
 <body>
-    <h1>Fraud Detection</h1>
+    <h1>Credit Card Eligibility Checker</h1>
+    <p class="description">Fill out the form below to check your eligibility.</p>
+
     <form>
-        <label for="Time">Time</label>
-        <input type="number" id="Time" name="Time" required>
+        <div class="form-group">
+            <label for="Owned_Car">Do you own a car?</label>
+            <select id="Owned_Car" name="Owned_Car">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
 
-        <label for="V1">V1</label>
-        <input type="text" id="V1" name="V1" required>
+        <div class="form-group">
+            <label for="Owned_Realty">Do you own property?</label>
+            <select id="Owned_Realty" name="Owned_Realty">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
 
-        <label for="V2">V2</label>
-        <input type="text" id="V2" name="V2" required>
+        <div class="form-group">
+            <label for="Total_Children">Number of Children</label>
+            <input type="number" id="Total_Children" name="Total_Children" min="0" required>
+        </div>
 
-        <label for="V3">V3</label>
-        <input type="text" id="V3" name="V3" required>
+        <div class="form-group">
+            <label for="Total_Income">Total Monthly Income (USD)</label>
+            <input type="number" id="Total_Income" name="Total_Income" required>
+        </div>
 
-        <label for="V4">V4</label>
-        <input type="text" id="V4" name="V4" required>
+        <div class="form-group">
+            <label for="Owned_Mobile_Phone">Do you have a mobile phone?</label>
+            <select id="Owned_Mobile_Phone" name="Owned_Mobile_Phone">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
 
-        <label for="V5">V5</label>
-        <input type="text" id="V5" name="V5" required>
+        <div class="form-group">
+            <label for="Owned_Work_Phone">Do you have a work phone?</label>
+            <select id="Owned_Work_Phone" name="Owned_Work_Phone">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
 
-        <label for="V6">V6</label>
-        <input type="text" id="V6" name="V6" required>
+        <div class="form-group">
+            <label for="Owned_Phone">Do you have a home phone?</label>
+            <select id="Owned_Phone" name="Owned_Phone">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
 
-        <label for="V7">V7</label>
-        <input type="text" id="V7" name="V7" required>
+        <div class="form-group">
+            <label for="Owned_Email">Do you have an email?</label>
+            <select id="Owned_Email" name="Owned_Email">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
 
-        <label for="V8">V8</label>
-        <input type="text" id="V8" name="V8" required>
+        <div class="form-group">
+            <label for="Total_Family_Members">Family Members Living with You</label>
+            <input type="number" id="Total_Family_Members" name="Total_Family_Members" min="1" required>
+        </div>
 
-        <label for="V9">V9</label>
-        <input type="text" id="V9" name="V9" required>
+        <div class="form-group">
+            <label for="Applicant_Age">Your Age</label>
+            <input type="number" id="Applicant_Age" name="Applicant_Age" min="18" required>
+        </div>
 
-        <label for="V10">V10</label>
-        <input type="text" id="V10" name="V10" required>
+        <div class="form-group">
+            <label for="Years_of_Working">Years of Work Experience</label>
+            <input type="number" id="Years_of_Working" name="Years_of_Working" min="0" required>
+        </div>
 
-        <label for="V11">V11</label>
-        <input type="text" id="V11" name="V11" required>
+        <div class="form-group">
+            <label for="Total_Bad_Debt">Total Bad Debt</label>
+            <input type="number" id="Total_Bad_Debt" name="Total_Bad_Debt" min="0" required>
+        </div>
 
-        <label for="V12">V12</label>
-        <input type="text" id="V12" name="V12" required>
+        <div class="form-group">
+            <label for="Total_Good_Debt">Total Good Debt</label>
+            <input type="number" id="Total_Good_Debt" name="Total_Good_Debt" min="0" required>
+        </div>
 
-        <label for="V13">V13</label>
-        <input type="text" id="V13" name="V13" required>
+        <div class="form-group">
+            <label for="Applicant_Gender_Encoded">Gender</label>
+            <select id="Applicant_Gender_Encoded" name="Applicant_Gender_Encoded">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
 
-        <label for="V14">V14</label>
-        <input type="text" id="V14" name="V14" required>
+        <div class="form-group">
+            <label for="Income_Type_Encoded">Income Type</label>
+            <select id="Income_Type_Encoded" name="Income_Type_Encoded">
+                <option value="Working">Working</option>
+                <option value="Commercial associate">Commercial associate</option>
+                <option value="Pensioner">Pensioner</option>
+                <option value="State servant">State servant</option>
+                <option value="Student">Student</option>
+            </select>
+        </div>
 
-        <label for="V15">V15</label>
-        <input type="text" id="V15" name="V15" required>
+        <div class="form-group">
+            <label for="Education_Type_Encoded">Education Level</label>
+            <select id="Education_Type_Encoded" name="Education_Type_Encoded">
+                <option value="Secondary / secondary special">Secondary / secondary special</option>
+                <option value="Higher education">Higher education</option>
+                <option value="Incomplete higher">Incomplete higher</option>
+                <option value="Lower secondary">Lower secondary</option>
+                <option value="Academic degree">Academic degree</option>
+            </select>
+        </div>
 
-        <label for="V16">V16</label>
-        <input type="text" id="V16" name="V16" required>
+        <div class="form-group">
+            <label for="Family_Status_Encoded">Family Status</label>
+            <select id="Family_Status_Encoded" name="Family_Status_Encoded">
+                <option value="Married">Married</option>
+                <option value="Single / not married">Single / not married</option>
+                <option value="Civil marriage">Civil marriage</option>
+                <option value="Separated">Separated</option>
+                <option value="Widow">Widow</option>
+            </select>
+        </div>
 
-        <label for="V17">V17</label>
-        <input type="text" id="V17" name="V17" required>
+        <div class="form-group">
+            <label for="Housing_Type_Encoded">Housing Type</label>
+            <select id="Housing_Type_Encoded" name="Housing_Type_Encoded">
+                <option value="House / apartment">House / apartment</option>
+                <option value="With parents">With parents</option>
+                <option value="Municipal apartment">Municipal apartment</option>
+                <option value="Rented apartment">Rented apartment</option>
+                <option value="Office apartment">Office apartment</option>
+                <option value="Co-op apartment">Co-op apartment</option>
+            </select>
+        </div>
 
-        <label for="V18">V18</label>
-        <input type="text" id="V18" name="V18" required>    
-
-        <label for="V19">V19</label>
-        <input type="text" id="V19" name="V19" required>
-
-        <label for="V20">V20</label>
-        <input type="text" id="V20" name="V20" required>
-
-        <label for="V21">V21</label>
-        <input type="text" id="V21" name="V21" required>
-
-        <label for="V22">V22</label>
-        <input type="text" id="V22" name="V22" required>
-
-        <label for="V23">V23</label>
-        <input type="text" id="V23" name="V23" required>
-
-        <label for="V24">V24</label>
-        <input type="text" id="V24" name="V24" required>
-
-        <label for="V25">V25</label>
-        <input type="text" id="V25" name="V25" required>
-
-        <label for="V26">V26</label>
-        <input type="text" id="V26" name="V26" required>
-
-        <label for="V27">Amount</label>
-        <input type="text" id="Amount" name="Amount" required>
-
-
-        <button type="button" onclick="predict()">Predict</button>
+        <button type="button" onclick="predict()">Check Eligibility</button>
+        <button type="button" class="help-btn" onclick="toggleHelp()">❓ What do these fields mean?</button>
     </form>
+
     <div id="result"></div>
 
+    <!-- Floating Chatbot Widget -->
+    <div id="chatbot-widget" onclick="toggleChatbox()">💬</div>
+    <div id="chatbox">
+        <div id="chatWindow"></div>
+        <div id="chatInput">
+            <input type="text" id="userInput" placeholder="Ask me anything..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <div id="help" class="tooltip">
+        <strong>Field Descriptions:</strong><br><br>
+        <b>Owned Car / Realty / Phone / Email:</b> Indicates whether you have these assets or means of contact.<br>
+        <b>Income Type:</b> Type of employment or income source.<br>
+        <b>Education Level:</b> Highest level of formal education achieved.<br>
+        <b>Family Status:</b> Marital status.<br>
+        <b>Housing Type:</b> Your current living situation.<br>
+        <b>Bad/Good Debt:</b> Amount of loans or credit that may affect your score.
+    </div>
+
     <script>
+        function toggleHelp() {
+            const help = document.getElementById("help");
+            help.style.display = help.style.display === "block" ? "none" : "block";
+        }
+
+        function toggleChatbox() {
+            const chatbox = document.getElementById('chatbox');
+            chatbox.style.display = chatbox.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const chat = document.getElementById('chatWindow');
+            const message = input.value.trim();
+            if (!message) return;
+    
+            // Display user message
+            chat.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+    
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            })
+            .then(res => res.json())
+            .then(data => {
+                chat.innerHTML += `<div><strong>Assistant:</strong> ${data.reply}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            })
+            .catch(err => {
+                chat.innerHTML += `<div style="color:red;">Error: ${err.message}</div>`;
+            });
+        }
+
         function predict() {
-            const form = document.querySelector('form');
+            const form = document.querySelector("form");
             const formData = new FormData(form);
+
             fetch('/predict', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
+                const resultBox = document.getElementById("result");
+                resultBox.style.display = "block";
+
                 if (data.error) {
-                    document.getElementById('result').textContent = `Error: ${data.error}`;
+                    resultBox.style.backgroundColor = "#f8d7da";
+                    resultBox.style.borderLeftColor = "#e74c3c";
+                    resultBox.textContent = `Error: ${data.error}`;
                 } else {
                     const prediction = data.prediction;
-                    const isFraud = data.is_fraud;
-                    document.getElementById('result').textContent = `Prediction: ${prediction}, Is Fraud: ${isFraud}`;
+                    const isEligible = data.is_eligible;
+                    resultBox.style.backgroundColor = isEligible ? '#eaf7ea' : '#fff3cd';
+                    resultBox.style.borderLeftColor = isEligible ? '#2ecc71' : '#f1c40f';
+                    resultBox.textContent = `Prediction Score: ${prediction.toFixed(3)}, Credit Card Eligible: ${isEligible ? "Yes ✅" : "No ❌"}`;
                 }
             })
             .catch(error => {
-                document.getElementById('result').textContent = `Error: ${error}`;
+                const resultBox = document.getElementById("result");
+                resultBox.style.display = "block";
+                resultBox.style.backgroundColor = "#f8d7da";
+                resultBox.style.borderLeftColor = "#e74c3c";
+                resultBox.textContent = `Error: ${error.message}`;
             });
         }
     </script>

@@ -1,1 +1,1 @@
-full dataset can be downloaded from here: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+full dataset can be downloaded from here: https://www.kaggle.com/datasets/caesarmario/application-data?resource=download&select=Application_Data.csv

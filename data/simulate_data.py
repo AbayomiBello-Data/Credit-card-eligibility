@@ -2,17 +2,17 @@ import pandas as pd
 from sklearn.utils import resample
 
 # Load the actual dataset
-actual_data = pd.read_csv('data/creditcard.csv')
+actual_data = pd.read_csv('data/fraud_data.csv')
 
 # Separate the data into fraudulent and non-fraudulent transactions
-fraudulent_data = actual_data[actual_data['Class'] == 1]
-non_fraudulent_data = actual_data[actual_data['Class'] == 0]
+fraudulent_data = actual_data[actual_data['Status'] == 1]
+non_fraudulent_data = actual_data[actual_data['Status'] == 0]
 
 # Define the number of simulated data points you want to generate
 n_simulated_data_points = 100000  # Example: 100,000
 
 # Calculate the number of fraudulent and non-fraudulent transactions to generate
-n_fraudulent_transactions = int(n_simulated_data_points * actual_data['Class'].mean())
+n_fraudulent_transactions = int(n_simulated_data_points * actual_data['Status'].mean())
 n_non_fraudulent_transactions = n_simulated_data_points - n_fraudulent_transactions
 
 # Generate simulated fraudulent transactions by sampling with replacement
