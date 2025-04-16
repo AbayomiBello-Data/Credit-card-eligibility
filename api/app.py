@@ -18,7 +18,7 @@ basic_auth = BasicAuth(app)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Environment variables
-MODEL_URI = os.getenv('MODEL_URI', 'runs:/eaea146442e4455abe38723907e65285/model')
+MODEL_URI = os.getenv('MODEL_URI', 'models:/fraud_detection/Production')
 SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
