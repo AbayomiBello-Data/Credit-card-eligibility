@@ -38,13 +38,17 @@ if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant about credit scores and card usage."}]
 
 # Helper function to encode categorical variables
-def encode_input(gender, income_type, education, family_status, housing_type):
+def encode_input(gender, income_type, education, family_status, housing_type, mobile_phone, work_phone, phone, email):
     return {
         "Applicant_Gender_Encoded": {"Male": 1, "Female": 0}[gender],
         "Income_Type_Encoded": {"Working": 0, "Commercial associate": 1, "Pensioner": 2, "State servant": 3, "Student": 4}[income_type],
         "Education_Type_Encoded": {"Secondary / secondary special": 0, "Higher education": 1, "Incomplete higher": 2, "Lower secondary": 3, "Academic degree": 4}[education],
         "Family_Status_Encoded": {"Married": 0, "Single / not married": 1, "Civil marriage": 2, "Separated": 3, "Widow": 4}[family_status],
         "Housing_Type_Encoded": {"House / apartment": 0, "With parents": 1, "Municipal apartment": 2, "Rented apartment": 3, "Office apartment": 4, "Co-op apartment": 5}[housing_type],
+        "Owned_Mobile_Phone": 1 if mobile_phone == "Yes" else 0,
+        "Owned_Work_Phone": 1 if work_phone == "Yes" else 0,
+        "Owned_Phone": 1 if phone == "Yes" else 0,
+        "Owned_Email": 1 if email == "Yes" else 0
     }
 
 # --- Credit Card Eligibility Form ---
@@ -61,6 +65,10 @@ with col_main:
             housing_type = st.selectbox("Housing Type", ["House / apartment", "With parents", "Municipal apartment", "Rented apartment", "Office apartment", "Co-op apartment"])
             car = st.radio("Owns Car?", ["Yes", "No"])
             realty = st.radio("Owns Realty?", ["Yes", "No"])
+            mobile_phone = st.radio("Owns Mobile Phone?", ["Yes", "No"])
+            work_phone = st.radio("Owns Work Phone?", ["Yes", "No"])
+            phone = st.radio("Owns Phone?", ["Yes", "No"])
+            email = st.radio("Owns Email?", ["Yes", "No"])
         with col2:
             income = st.number_input("Total Income", min_value=0.0)
             age = st.number_input("Age", min_value=18)
@@ -74,7 +82,7 @@ with col_main:
         if submitted and model:
             try:
                 # Prepare input data
-                encoded_data = encode_input(gender, income_type, education, family_status, housing_type)
+                encoded_data = encode_input(gender, income_type, education, family_status, housing_type, mobile_phone, work_phone, phone, email)
                 data = {
                     **encoded_data,
                     "Total_Income": income,
