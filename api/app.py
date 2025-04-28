@@ -1,162 +1,155 @@
-from flask import Flask, request, jsonify, render_template
-import openai
-import mlflow
+import streamlit as st
 import pandas as pd
+import openai
+import mlflow.pyfunc
 import os
 import logging
-from mlflow.pyfunc import load_model
-from flask_basicauth import BasicAuth
-from sklearn.preprocessing import LabelEncoder
-
-app = Flask(__name__)
-app.config['BASIC_AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME', 'admin')
-app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD', 'password')
-
-basic_auth = BasicAuth(app)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Environment variables
-MODEL_URI = os.getenv('MODEL_URI', 'models:/fraud_detection/Production')
+MODEL_URI = os.getenv('MODEL_URI', 'models:/fraud_detection/Production')  # Default to Production model
 SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
-
-# Set your OpenAI key in environment variable
+# Set your OpenAI key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-@app.route('/chat', methods=['POST'])
-@basic_auth.required
-def chat():
-    data = request.get_json()
-    user_input = data.get("message", "")
-
+# Load model with caching
+@st.cache_resource
+def load_model():
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant who specializes in credit card approval, security tips,"
-                "fraud prevention, and improving eligibility for financial products. "
-                "Provide clear and friendly answers to help users better understand how to get approved "
-                "and use credit cards responsibly."},
-                {"role": "user", "content": user_input}
-            ]
+        return mlflow.pyfunc.load_model(MODEL_URI)
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
+
+model = load_model()
+
+# Set up session state for the chat
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "system", "content": "You are a helpful assistant about credit scores and card usage."}]
+
+# Helper function to encode categorical variables
+def encode_input(gender, income_type, education, family_status, housing_type):
+    return {
+        "Applicant_Gender_Encoded": {"Male": 1, "Female": 0}[gender],
+        "Income_Type_Encoded": {"Working": 0, "Commercial associate": 1, "Pensioner": 2, "State servant": 3, "Student": 4}[income_type],
+        "Education_Type_Encoded": {"Secondary / secondary special": 0, "Higher education": 1, "Incomplete higher": 2, "Lower secondary": 3, "Academic degree": 4}[education],
+        "Family_Status_Encoded": {"Married": 0, "Single / not married": 1, "Civil marriage": 2, "Separated": 3, "Widow": 4}[family_status],
+        "Housing_Type_Encoded": {"House / apartment": 0, "With parents": 1, "Municipal apartment": 2, "Rented apartment": 3, "Office apartment": 4, "Co-op apartment": 5}[housing_type],
+    }
+
+# --- Credit Card Eligibility Form ---
+col_main, col_chat = st.columns([2, 1])
+with col_main:
+    st.title("💳 Credit Card Eligibility Checker")
+    with st.form("eligibility_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            gender = st.selectbox("Gender", ["Male", "Female"])
+            income_type = st.selectbox("Income Type", ["Working", "Commercial associate", "Pensioner", "State servant", "Student"])
+            education = st.selectbox("Education", ["Secondary / secondary special", "Higher education", "Incomplete higher", "Lower secondary", "Academic degree"])
+            family_status = st.selectbox("Family Status", ["Married", "Single / not married", "Civil marriage", "Separated", "Widow"])
+            housing_type = st.selectbox("Housing Type", ["House / apartment", "With parents", "Municipal apartment", "Rented apartment", "Office apartment", "Co-op apartment"])
+            car = st.radio("Owns Car?", ["Yes", "No"])
+            realty = st.radio("Owns Realty?", ["Yes", "No"])
+        with col2:
+            income = st.number_input("Total Income", min_value=0.0)
+            age = st.number_input("Age", min_value=18)
+            work_years = st.number_input("Years of Working", min_value=0.0)
+            children = st.number_input("Total Children", min_value=0)
+            fam_members = st.number_input("Total Family Members", min_value=1)
+            good_debt = st.number_input("Good Debt", min_value=0.0)
+            bad_debt = st.number_input("Bad Debt", min_value=0.0)
+
+        submitted = st.form_submit_button("Check Eligibility")
+        if submitted and model:
+            try:
+                # Prepare input data
+                encoded_data = encode_input(gender, income_type, education, family_status, housing_type)
+                data = {
+                    **encoded_data,
+                    "Total_Income": income,
+                    "Applicant_Age": age,
+                    "Years_of_Working": work_years,
+                    "Total_Children": children,
+                    "Total_Family_Members": fam_members,
+                    "Total_Bad_Debt": bad_debt,
+                    "Total_Good_Debt": good_debt,
+                    "Owned_Car": 1 if car == "Yes" else 0,
+                    "Owned_Realty": 1 if realty == "Yes" else 0
+                }
+                df = pd.DataFrame([data])
+                prediction = model.predict(df)[0]
+                st.success(f"Prediction Score: {prediction:.2f}")
+                if prediction > 0.5:
+                    st.success("✅ Eligible for Credit Card")
+                else:
+                    st.warning("❌ Not Eligible for Credit Card")
+            except Exception as e:
+                st.error(f"Prediction Error: {e}")
+
+# --- Chat Assistant ---
+with col_chat:
+    st.title("💬 Chat Assistant")
+    st.markdown("Ask me anything about credit cards, scores, and tips.")
+    user_input = st.chat_input("Type your question...")
+
+    if user_input:
+        st.session_state.messages.append({"role": "user", "content": user_input})
+
+        with st.container():
+            full_response = ""
+            message_placeholder = st.empty()
+
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=st.session_state.messages,
+                    temperature=0.7,
+                    stream=True
+                )
+
+                for chunk in response:
+                    if "choices" in chunk and chunk["choices"][0]["delta"].get("content"):
+                        full_response += chunk["choices"][0]["delta"]["content"]
+                        message_placeholder.markdown(
+                            f"<div class='bot-bubble'><strong>Assistant:</strong><br>{full_response}</div>", unsafe_allow_html=True
+                        )
+                st.session_state.messages.append({"role": "assistant", "content": full_response})
+            except Exception as e:
+                st.error(f"OpenAI API Error: {e}")
+
+    # Display chat history
+    for msg in st.session_state.messages[1:]:
+        role = msg["role"]
+        content = msg["content"]
+        bubble_class = "user-bubble" if role == "user" else "bot-bubble"
+
+        st.markdown(
+            f"<div class='{bubble_class}'><strong>{'You' if role == 'user' else 'Assistant'}:</strong><br>{content}</div>",
+            unsafe_allow_html=True
         )
-        reply = response['choices'][0]['message']['content']
-        return jsonify({'reply': reply})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-          
 
-
-
-# Load the ML model
-try:
-    model = load_model(MODEL_URI)
-    logging.info("Model loaded successfully.")
-except Exception as e:
-    logging.error(f"Error loading model: {e}")
-    model = None
-
-@app.route('/')
-@basic_auth.required
-def index():
-    return render_template('index.html')
-
-@app.route('/predict', methods=['POST'])
-@basic_auth.required
-def predict():
-    if not model:
-        return jsonify({'error': 'Model not loaded'}), 500
-
-    data = request.form.to_dict()
-    if not data:
-        return jsonify({'error': 'No data provided'}), 400
-
-    try:
-        # Binary Yes/No fields
-        yes_no_fields = [
-            'Owned_Car', 'Owned_Realty', 'Owned_Mobile_Phone',
-            'Owned_Work_Phone', 'Owned_Phone', 'Owned_Email'
-        ]
-
-        for field in yes_no_fields:
-            data[field] = 1 if data[field].strip().lower() == 'yes' else 0
-
-        # Convert numeric fields to float
-        numeric_fields = [
-            'Total_Children', 'Total_Income', 'Total_Family_Members',
-            'Applicant_Age', 'Years_of_Working', 'Total_Bad_Debt', 'Total_Good_Debt'
-        ]
-        for field in numeric_fields:
-            data[field] = float(data[field])
-
-        # Label encoding of categorical values (manually mapped)
-        # These mappings MUST match what the LabelEncoder saw during training
-
-        gender_map = {'Male': 1, 'Female': 0}
-        income_map = {
-            'Working': 0, 'Commercial associate': 1, 'Pensioner': 2,
-            'State servant': 3, 'Student': 4
-        }
-        education_map = {
-            'Secondary / secondary special': 0,
-            'Higher education': 1,
-            'Incomplete higher': 2,
-            'Lower secondary': 3,
-            'Academic degree': 4
-        }
-        family_status_map = {
-            'Married': 0,
-            'Single / not married': 1,
-            'Civil marriage': 2,
-            'Separated': 3,
-            'Widow': 4
-        }
-        housing_map = {
-            'House / apartment': 0,
-            'With parents': 1,
-            'Municipal apartment': 2,
-            'Rented apartment': 3,
-            'Office apartment': 4,
-            'Co-op apartment': 5
-        }
-
-        data['Applicant_Gender_Encoded'] = gender_map.get(data['Applicant_Gender_Encoded'], -1)
-        data['Income_Type_Encoded'] = income_map.get(data['Income_Type_Encoded'], -1)
-        data['Education_Type_Encoded'] = education_map.get(data['Education_Type_Encoded'], -1)
-        data['Family_Status_Encoded'] = family_status_map.get(data['Family_Status_Encoded'], -1)
-        data['Housing_Type_Encoded'] = housing_map.get(data['Housing_Type_Encoded'], -1)
-
-        # Check for any failed mapping
-        if -1 in (
-            data['Applicant_Gender_Encoded'],
-            data['Income_Type_Encoded'],
-            data['Education_Type_Encoded'],
-            data['Family_Status_Encoded'],
-            data['Housing_Type_Encoded']
-        ):
-            return jsonify({'error': 'Invalid categorical input'}), 400
-
-        # Prepare DataFrame
-        df = pd.DataFrame([data])
-
-        # Predict
-        prediction = model.predict(df)[0]
-        is_eligible = prediction > 0.5
-
-        logging.info(f"User input: {data}")
-        logging.info(f"Prediction: {prediction} | Eligible: {is_eligible}")
-
-        return jsonify({
-            'prediction': float(prediction),
-            'is_eligible': bool(is_eligible)
-        })
-
-    except Exception as e:
-        logging.error(f"Prediction error: {e}")
-        return jsonify({'error': 'An error occurred during prediction'}), 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(SERVER_PORT), debug=DEBUG_MODE)
+# 💬 Bubble styling
+st.markdown("""
+<style>
+.user-bubble {
+    background-color: #DCF8C6;
+    padding: 10px;
+    border-radius: 15px;
+    margin: 8px 0;
+    max-width: 80%;
+    align-self: flex-end;
+}
+.bot-bubble {
+    background-color: #F1F0F0;
+    padding: 10px;
+    border-radius: 15px;
+    margin: 8px 0;
+    max-width: 80%;
+}
+</style>
+""", unsafe_allow_html=True)
