@@ -1,4 +1,5 @@
 pandas
+openai
 numpy
 scikit-learn
 flask
