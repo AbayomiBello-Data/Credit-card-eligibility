@@ -1,15 +1,15 @@
 import streamlit as st
 import pandas as pd
 import openai
-import mlflow.pyfunc
 import os
 import logging
+import pickle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Environment variables
-MODEL_URI = os.getenv('MODEL_URI', 'models:/fraud_detection/Production')  # Default to Production model
+MODEL_PATH = os.getenv('MODEL_PATH', 'model.pkl')  # Path to the saved model (default is 'model.pkl')
 SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
@@ -20,8 +20,13 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 @st.cache_resource
 def load_model():
     try:
-        return mlflow.pyfunc.load_model(MODEL_URI)
+        logging.info(f"Loading model from: {MODEL_PATH}")
+        with open(MODEL_PATH, 'rb') as f:
+            model = pickle.load(f)
+        logging.info("Model loaded successfully.")
+        return model
     except Exception as e:
+        logging.error(f"Error loading model: {e}")
         st.error(f"Error loading model: {e}")
         return None
 
@@ -134,7 +139,7 @@ with col_chat:
         )
 
 # 💬 Bubble styling
-st.markdown("""
+st.markdown(""" 
 <style>
 .user-bubble {
     background-color: #DCF8C6;
