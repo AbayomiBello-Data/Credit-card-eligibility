@@ -4,6 +4,7 @@ import openai
 import os
 import logging
 import pickle
+import joblib
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
