@@ -9,7 +9,7 @@ import pickle
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Environment variables
-MODEL_PATH = os.getenv('MODEL_PATH', 'model\saved_models\model.pkl')  # Path to the saved model (default is 'model.pkl')
+MODEL_PATH = os.getenv('MODEL_PATH', 'model/saved_models/model.pkl')  # Path to the saved model (default is 'model.pkl')
 SERVER_PORT = os.getenv('PORT', '8000')
 DEBUG_MODE = os.getenv('DEBUG', 'False').lower() == 'true'
 
