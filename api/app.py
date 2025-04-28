@@ -22,7 +22,7 @@ def load_model():
     try:
         logging.info(f"Loading model from: {MODEL_PATH}")
         with open(MODEL_PATH, 'rb') as f:
-            model = pickle.load(f)
+            model = joblib.load(f)
         logging.info("Model loaded successfully.")
         return model
     except Exception as e:
