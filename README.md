@@ -1,11 +1,12 @@
-# Fraud Detection Application
+# Credit card Eligibility Application
 
-This repository contains a machine learning application for fraud detection. It uses a RandomForest classifier to predict fraudulent activities and is built with Flask, deployed using Docker, and orchestrated with GitHub Actions for CI/CD. MLflow is used for model tracking and management.
+This repository contains a machine learning application for credit card eligibility checker. It uses a RandomForest classifier to predict whther a user is eligible for a credit card and also a chatbot 
+that gives tips for the user on how to improve their chances of getting one and is built with Streamlit, deployed using Docker, and orchestrated with GitHub Actions for CI/CD. MLflow is used for model tracking and management.
 
 ## Key Features
-- Automated detection of potential fraud in financial transactions.
+- Automated detection of whether a user is eligible for a credit card.
 - Regular retraining capabilities to adapt to data drift.
-- RESTful API for accessing model predictions.
+- Streamlit API for accessing model predictions.
 - MLflow integration for model performance monitoring.
 - Automated workflow using GitHub Actions for model retraining and deployment.
 
@@ -16,7 +17,6 @@ Before you begin, ensure you have met the following requirements:
 - Docker installed
 - Access to a terminal/command line interface
 - GitHub account (for CI/CD using GitHub Actions)
-- Azure account (if deploying to Azure Web App)
 
 ## Installation
 
@@ -54,16 +54,6 @@ python /model/model.py
 
 This will load the test data and the trained model, then output evaluation metrics.
 
-## Running the Application Locally
-
-To run the application locally:
-
-1. Start the Flask app:
-   ```
-   python /api/app.py
-   ```
-
-2. The application will be available at `http://127.0.0.1:8000/`.
 
 
 ## Running the Application
@@ -71,15 +61,9 @@ To run the application locally:
    ```
    python model/model.py
    ```
-2. **Start the Flask API**:
+2. **Start the Streamlit app**:
    ```
-   python api/app.py
-   ```
-3. **Send prediction requests** (using tools like `curl` or Postman):
-   ```
-   curl -X POST -H "Content-Type: application/json" -d '{"Time": ..., "V1": ..., ...}' http://127.0.0.1:8000/predict
-   ```
-   
+   Streamlit run api/app.py
    ```
 
 
@@ -89,12 +73,12 @@ To deploy the application using Docker:
 
 1. Build the Docker image:
    ```
-   docker build -t fraud-detector .
+   docker build -t credit-eligibility .
    ```
 
 2. Run the Docker container:
    ```
-   docker run -p 8000:8080 fraud-detector
+   docker run -p 8000:8080 credit-eligibility
    ```
 
 The application will be available at `http://localhost:8080`.
