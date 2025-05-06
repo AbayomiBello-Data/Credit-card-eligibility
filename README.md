@@ -92,6 +92,10 @@ The `.github/workflows/ml-ops-workflow.yml` file defines the GitHub Actions work
 To track models using MLflow, ensure MLflow server is running and accessible. The training and evaluation scripts are set up to log metrics and parameters to MLflow. 
 ```
 mlflow ui
+
+
+**You can run the application here**
+https://credit-card-eligibility.streamlit.app/
 ```
 
 ## License
